@@ -83,7 +83,6 @@ const P = UpperTriangular(Int[(i-1)*LL - (i+1)*i/2 + j for i in 1:LL, j in 1:LL]
 const S = UpperTriangular(Int[(i-1)*4 - (i-1)*i/2 + j for i in 1:4, j in 1:4]);
 
 const LC::Int     = floor(Int,(LL+3)*LL/2)    # Number of C
-const LK::Int     = floor(Int,(LL-1)*LL/2)    # Number of K``
     
 
 """
@@ -109,6 +108,7 @@ function test!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
     Vr::Float64    = p[3]
     μ_imp::Float64 = p[4]
     μ_c::Float64   = p[5]
+    LC::Int     = floor(Int,(LL+3)*LL/2)    # Number of C
     
     
     H_imp  = Hermitian([

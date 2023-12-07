@@ -1,89 +1,8 @@
-using DifferentialEquations
-using LinearAlgebra, DelimitedFiles
-using Logging: global_logger
-using TerminalLoggers: TerminalLogger
-using ProgressMeter
-using JLD2
-
-global_logger(TerminalLogger());
-
-
-fp1 = ARGS[1]
-fp2 = ARGS[2]
-
-LL = parse(Int, ARGS[3])
-Uin = parse(Float64, ARGS[4]);
-Vin = parse(Float64, ARGS[5]);
-UU = parse(Float64, ARGS[6])
-VV = parse(Float64, ARGS[7]);
-tmin = parse(Float64, ARGS[8]);
-tmax = parse(Float64, ARGS[9]);
-outputf = ARGS[10]
-
-
-tspan = (tmin,tmax)
-
-
-println("Reading File 1")
-CK= open(fp1, "r") do f
-    readdlm(f)
-end;
-
-println("Reading File 2")
-ρ = open(fp2, "r") do f
-    arr = readdlm(f)
-end;
-
-C=zeros(Float64, LL+1, LL+1)
-
-println("LL = $LL")
-println(size(CK))
-C[2:LL+1,2:LL+1]=deepcopy(CK[1:LL,1:LL]);
-C[1,2:LL+1]=deepcopy(CK[2*LL+1,1:LL]+CK[2*LL+2,1:LL])
-C[2:LL+1,1]=deepcopy(CK[1:LL,2*LL+1]+CK[1:LL,2*LL+2]);
-
-K=CK[LL+1:2*LL,1:LL];
-
-lC = size(C,1)
-lK = size(K,1)
-lρ = size(ρ,1)
 
 # X0=Float64[]
-X0 = ComplexF64[]
 
-for i in 1:lρ
-    for j in i:lρ
-        push!(X0, ρ[i,j]) 
-    end
-end
-
-
-for j in 2:lC
-    push!(X0, C[1,j])
-end
-
-for i in 2:lC
-    for j in i:lC
-        push!(X0, C[i,j])
-    end
-end
-
-
-for i in 1:lK
-    for j in (i+1):lK
-        push!(X0, K[i,j])
-    end
-end
-
-dX = similar(X0);
 
 # TODO: Auslagern
-const Q = UpperTriangular(Int[(LL+1)*i - (i+1)*i/2 + j for i in 0:LL, j in 0:LL])
-const P = UpperTriangular(Int[(i-1)*LL - (i+1)*i/2 + j for i in 1:LL, j in 1:LL])
-const S = UpperTriangular(Int[(i-1)*4 - (i-1)*i/2 + j for i in 1:4, j in 1:4]);
-
-const LC::Int     = floor(Int,(LL+3)*LL/2)    # Number of C
-const LK::Int     = floor(Int,(LL-1)*LL/2)    # Number of K``
     
 
 """
@@ -268,36 +187,4 @@ function test!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
 end
 
 
-
-
-linsolve = KrylovJL_GMRES()
-alg_expl = AutoTsit5(Rosenbrock23(autodiff=false))
-    #SSPSDIRK2(autodiff=false)
-alg_impl = AutoTsit5(ImplicitEuler(autodiff=false, linsolve = KrylovJL_GMRES()))
-    #KenCarp47(linsolve = KrylovJL_GMRES(), autodiff=false)
-    #
-
-p_0  = [LL, UU, VV, 0.0, 0.0];
-
-prob = ODEProblem{true}(test!,X0,tspan,p_0,
-    progress = true,
-    progress_steps = 1)
-
-sol = solve(prob, alg_impl; save_everystep = true, abstol=1e-8, reltol=1e-8);
-
-println("Errors:\n",sol.errors)
-println(" =========================== ")
-println("Algorithm Details:\n",sol.alg)
-println(" =========================== ")
-println("Solution stats:\n", sol.stats)
-
-jldopen(outputf,"w") do f
-  f["solution"] = sol.u
-  f["t"] = sol.t
-  f["Uin"] = Uin
-  f["Vin"] = Vin
-  f["UU"] = UU
-  f["VV"]=VV
-  f["L"]=LL
-end
 
