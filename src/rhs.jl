@@ -23,39 +23,43 @@ function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
     J::Float64     = 1.0
     L::Int         = Int(p[1])
     U::Float64     = p[2]
-    ϵ_imp::Float64 = U/2
+    ϵ_imp::Float64 = -U/2
     Vr::Float64    = p[3]
-    μ_imp::Float64 = p[4]
+    μ_imp::Float64 = - p[4]
     μ_c::Float64   = p[5]
     LC::Int     =floor(Int,(L+3)*L/2)
     LK::Int     = floor(Int,(L-1)*L/2)
 
 
-H_imp  = Hermitian([
-             U  + 2(μ_imp-ϵ_imp)  Vr*X[10+r]         Vr*X[10+r]        0         ;
-             conj(Vr*X[10+r])    μ_imp - ϵ_imp      0                 Vr*X[10+r];
-             conj(Vr*X[10+r])    0                  μ_imp - ϵ_imp     Vr*X[10+r];
-             0                   conj(Vr*X[10+r])   conj(Vr*X[10+r])  0
-             ])
 
-    ρ  = Hermitian([X[1]         X[2]         X[3]         X[4];
-                    conj(X[2])   X[5]         X[6]         X[7];
-                    conj(X[3])   conj(X[6])   X[8]         X[9];
-                    conj(X[4])   conj(X[7])   conj(X[9])   X[10]])
+    #  rho[1,1]
+    dX[1] =-2 * imag(conj(Vr * X[10+r]) *( X[2]  + X[3]))
+    #  rho[1,2]
+    dX[2] = -1im*( (U- μ_imp + ϵ_imp)*X[2] + Vr * X[10+r] * (X[5] + conj(X[6]) - X[1]) -conj(Vr * X[10+r]) * X[4])
+    #  rho[1,3]
+    dX[3] = -1im*( (U- μ_imp + ϵ_imp)*X[3] + Vr * X[10+r] * (X[6] + X[8] - X[1]) -conj(Vr * X[10+r]) * X[4])
+    #  rho[1,4]
+    dX[4] = -1im*( (U- 2*(μ_imp - ϵ_imp))*X[4] + Vr * X[10+r] * (X[7] + X[9] - X[2] -X[3]))
+    #  rho[2,2]
+    dX[5] = 2 * imag(conj(Vr * X[10+r]) *( X[2]  - X[7]))
+    #  rho[2,3]
+    dX[6] = -1im*(conj(Vr * X[10+r]) * (X[3] -X[7]) + Vr * X[10+r] * conj(X[9] - X[2]) )
+    #  rho[2,4]
+    dX[7] = -1im*(conj(Vr * X[10+r]) * X[4] - (μ_imp - ϵ_imp) * X[7] + Vr * X[10+r] * (X[10] -X[5] - X[6]))
+    #  rho[3,3]
+    dX[8] =2 * imag(conj(Vr * X[10+r]) *( X[3]  - X[9]))
+    #  rho[3,4]
+    dX[9] = -1im*(conj(Vr * X[10+r]) * X[4] - (μ_imp - ϵ_imp) * X[9] + Vr * X[10+r] * (X[10] -conj(X[6]) - X[8]))
+    #  rho[4,4]
+    #dX[9] = -1im*(conj(Vr*X[10+r])*X[4]  + (-μ_imp + ϵ_imp )*X[9] +Vr*X[10+r]*real(X[10]) - conj(X[6])*Vr*X[10+r] - real(X[8])*Vr*X[10+r])
+    dX[10] =2 * imag(conj(Vr * X[10+r]) *( X[7]  + X[9]))
 
-    # rho[i,j]
-    dρ = -1im .* (H_imp * ρ - ρ * H_imp)
-    dX[1:4] = dρ[1,:]
-    dX[5:7] = dρ[2,2:end]
-    dX[8:9] = dρ[3,3:end]
-    dX[10]  = dρ[4,4]
 
 
     # C[0,r]
     Qrr=floor(Int, (L+1)*r - (r+1)*r/2 + r)
     dX[10+r]=-1im*(J*X[10+r+1] + μ_c*X[10+r] - 2*Vr*(X[3]+X[7])*X[10+Qrr] + Vr*(X[3]+X[7]))
-    #XInd[10+r] = [10+r+1,10+r,3,7,10+Qrr,3,7]
-    #dX[10+r]=-1im*(J*X[XInd[10+r][1]] + μ_c*X[XInd[10+r][2]] - 2*Vr*(X[XInd[10+r][3]]+X[XInd[10+r][4]])*X[XInd[10+r][5]] + Vr*(X[XInd[10+r][6]]+X[XInd[10+r][7]]))
+
 
     # C[0,j] 1<j<L
     for j in 2:L-1

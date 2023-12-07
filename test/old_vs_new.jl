@@ -7,6 +7,16 @@
 
     for i in 1:NSamples
         X0test = randn(ComplexF64, 120)
+        X0test[1] = real(X0test[1]) .+ 1im * 0
+        X0test[5] = real(X0test[5]) .+ 1im * 0
+        X0test[8] = real(X0test[8]) .+ 1im * 0
+        X0test[10] = real(X0test[10]) .+ 1im * 0
+
+        for ii in 1:LL
+            Qii=floor(Int,(10+1)*i - (i+1)*i/2 + i +10)
+            X0test[Qii] = real(X0test[Qii]) .+ 1im * 0
+        end
+
         dX0test_1 = similar(X0test)
         dX0test_2 = similar(X0test)
         fill!(dX0test_1, NaN)
