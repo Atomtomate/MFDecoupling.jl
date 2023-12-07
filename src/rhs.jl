@@ -54,6 +54,8 @@ H_imp  = Hermitian([
     # C[0,r]
     Qrr=floor(Int, (L+1)*r - (r+1)*r/2 + r)
     dX[10+r]=-1im*(J*X[10+r+1] + μ_c*X[10+r] - 2*Vr*(X[3]+X[7])*X[10+Qrr] + Vr*(X[3]+X[7]))
+    #XInd[10+r] = [10+r+1,10+r,3,7,10+Qrr,3,7]
+    #dX[10+r]=-1im*(J*X[XInd[10+r][1]] + μ_c*X[XInd[10+r][2]] - 2*Vr*(X[XInd[10+r][3]]+X[XInd[10+r][4]])*X[XInd[10+r][5]] + Vr*(X[XInd[10+r][6]]+X[XInd[10+r][7]]))
 
     # C[0,j] 1<j<L
     for j in 2:L-1
