@@ -28,10 +28,11 @@ function test!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
     Vr::Float64    = p[3]
     μ_imp::Float64 = p[4]
     μ_c::Float64   = p[5]
-    
+    LC::Int     =floor(Int,(L+3)*L/2)
+    LK::Int     = floor(Int,(L-1)*L/2)
     
     H_imp  = Hermitian([
-             UU + 2(μ_imp-ϵ_imp)  Vr*X[10+r]         Vr*X[10+r]        0         ; 
+             U  + 2(μ_imp-ϵ_imp)  Vr*X[10+r]         Vr*X[10+r]        0         ;
              conj(Vr*X[10+r])    μ_imp - ϵ_imp      0                 Vr*X[10+r];
              conj(Vr*X[10+r])    0                  μ_imp - ϵ_imp     Vr*X[10+r];
              0                   conj(Vr*X[10+r])   conj(Vr*X[10+r])  0     

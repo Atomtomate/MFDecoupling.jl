@@ -13,5 +13,6 @@ global_logger(TerminalLogger());
 
 include("IO.jl")
 include("rhs_old.jl")
+include("rhs.jl")
 
 end # module MFDecoupling
