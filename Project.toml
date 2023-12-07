@@ -1,0 +1,4 @@
+name = "MFDecoupling"
+uuid = "302c5ee5-f6a5-4ccb-887c-986379ff7ea6"
+authors = ["Julian Stobbe <a@b.c>"]
+version = "0.1.0"
