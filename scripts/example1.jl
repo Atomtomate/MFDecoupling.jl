@@ -17,5 +17,5 @@ outputf = ARGS[10]
 
 tspan = (tmin,tmax)
 
-read_inputs(fp1, fp2, LL)
+X0, Q, P, S, LC, LK = read_inputs(fp1, fp2, LL)
 # solve
