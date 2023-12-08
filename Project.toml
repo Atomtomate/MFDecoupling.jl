@@ -12,3 +12,6 @@ Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 TerminalLoggers = "5d786b92-1e48-4d6f-9151-6b4477ca9bed"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

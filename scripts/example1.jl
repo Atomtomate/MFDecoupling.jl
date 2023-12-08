@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("..")
+Pkg.activate(joinpath(@__DIR__,".."))
 using MFDecoupling
 
 fp1 = ARGS[1]
