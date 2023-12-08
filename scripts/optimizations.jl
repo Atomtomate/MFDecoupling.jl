@@ -11,7 +11,7 @@ Vin = 0.5
 UU = 4.0
 VV = 0.5
 tmin = 0.0
-tmax = 1.0
+tmax = 10.0
 
 
 tspan = (tmin,tmax)
@@ -36,25 +36,29 @@ alg_impl2 = MFDecoupling.AutoTsit5(MFDecoupling.ImplicitEuler(autodiff=false, li
 
 p_0  = [LL, UU, VV, 0.0, 0.0];
 
-prob = MFDecoupling.ODEProblem{true}(MFDecoupling.test!,X0,tspan,p_0,
-    progress = true,
-    progress_steps = 1)
+prob1 = MFDecoupling.ODEProblem(MFDecoupling.test!,X0,tspan,p_0,
+    progress = false,
+    progress_steps = 0)
+prob2 = MFDecoupling.ODEProblem(MFDecoupling.test2!,X0,tspan,p_0,
+    progress = false,
+    progress_steps = 0)
 
-@time sol1 = MFDecoupling.solve(prob, alg_impl1; save_everystep = true, abstol=1e-8, reltol=1e-8);
+@time sol1_2 = MFDecoupling.solve(prob2, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
+@time sol1_1 = MFDecoupling.solve(prob1, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
 
-@time sol2 = MFDecoupling.solve(prob, alg_impl2; save_everystep = true, abstol=1e-8, reltol=1e-8);
+# @time sol2 = MFDecoupling.solve(prob1, alg_impl2; save_everystep = true, abstol=1e-8, reltol=1e-8);
 
-println("Errors:\n",sol1.errors)
+println("Errors:\n",sol1_1.errors)
 println(" =========================== ")
-println("Algorithm Details:\n",sol1.alg)
+println("Algorithm Details:\n",sol1_1.alg)
 println(" =========================== ")
-println("Solution stats:\n", sol1.stats)
+println("Solution stats:\n", sol1_1.stats)
 
 
-println("Errors:\n",sol2.errors)
+println("Errors:\n",sol1_2.errors)
 println(" =========================== ")
-println("Algorithm Details:\n",sol2.alg)
+println("Algorithm Details:\n",sol1_2.alg)
 println(" =========================== ")
-println("Solution stats:\n", sol2.stats)
+println("Solution stats:\n", sol1_2.stats)
 
 

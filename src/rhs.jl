@@ -16,11 +16,6 @@
     #dX[10+r]=-1im*(J*X[XInd[10+r][1]] + μ_c*X[XInd[10+r][2]] - 2*Vr*(X[XInd[10+r][3]]+X[XInd[10+r][4]])*X[XInd[10+r][5]] + Vr*(X[XInd[10+r][6]]+X[XInd[10+r][7]]))
 
 
-function gen_rhs(p)
-    rhs!(dX::Vector, X::Vector, t::Float64) = rhs_internal(dX, X, p[1], p[2], p[3], p[4], p[5])
-    return rhs!
-end
-
 """
     rhs!(dX::Vector, X::Vector, p, t)::Nothing
 
@@ -34,18 +29,18 @@ Parameters
   - *p[4]*:  μ_imp chemical potential for impurity
   - *p[5]*:  μ_c   chemical potential for chain (onsite energy shift is includid in the chemical potential)
 """
-function rhs_internal!(dX::Vector, X::Vector, t::Float64, L::Int, U::Float64, Vr::Float64, μ_imp::Float64, μ_c::Float64)::Nothing
-    r::Int = 1
+function test2!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
+    
+    r::Int         = 1  # Must be one in this set up!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     J::Float64     = 1.0
+    L::Int         = Int(p[1])
     U::Float64     = p[2]
-    ϵ_imp::Float64 = -U/2
+    ϵ_imp::Float64 = U/2
     Vr::Float64    = p[3]
-    μ_imp::Float64 = - p[4]
+    μ_imp::Float64 = p[4]
     μ_c::Float64   = p[5]
-    LC::Int     =floor(Int,(L+3)*L/2)
+    LC::Int     = floor(Int,(L+3)*L/2)
     LK::Int     = floor(Int,(L-1)*L/2)
-
-
 
     #  rho[1,1]
     dX[1] =-2 * imag(conj(Vr * X[10+r]) *( X[2]  + X[3]))
