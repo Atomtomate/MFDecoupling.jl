@@ -2,8 +2,11 @@ using Pkg
 Pkg.activate(joinpath(@__DIR__,".."))
 using  MFDecoupling
 
-fp1 = abspath("/home/julisn/Codes/MFDecoupling_TestData/t1/CK_U0.1V0.5.dat") #ARGS[1]
-fp2 = abspath("/home/julisn/Codes/MFDecoupling_TestData/t1/rho_U0.1V0.5.dat")
+fp1 = abspath("/home/localadmin/Nextcloud/Fuer_Julian/Initial_For_Time_Evolution/U0.1V0.5/CK_U0.1V0.5.dat") #ARGS[1]
+fp2 = abspath("/home/localadmin/Nextcloud/Fuer_Julian/Initial_For_Time_Evolution/U0.1V0.5/rho_U0.1V0.5.dat")
+
+outputf = abspath("/home/localadmin/Nextcloud/TeX/SIAM_MF_decoupling/Results/Time_evolution_Julia/Q_Uin0.1Vin0.5Ufi4.0Vfi0.5_New.jld2")
+
 
 LL = 1000
 Uin = 0.1
@@ -43,16 +46,16 @@ prob2 = MFDecoupling.ODEProblem(MFDecoupling.rhs!,X0,tspan,p_0,
     progress = false,
     progress_steps = 0)
 
-@time sol1_2 = MFDecoupling.solve(prob2, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
-@time sol1_1 = MFDecoupling.solve(prob1, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
+@time sol1_2 = MFDecoupling.solve(prob2, alg_impl1; save_everystep = true, abstol=1e-7, reltol=1e-7);
+#@time sol1_1 = MFDecoupling.solve(prob1, alg_impl1; save_everystep = true, abstol=1e-7, reltol=1e-7);
 
 # @time sol2 = MFDecoupling.solve(prob1, alg_impl2; save_everystep = true, abstol=1e-8, reltol=1e-8);
 
-println("Errors:\n",sol1_1.errors)
-println(" =========================== ")
-println("Algorithm Details:\n",sol1_1.alg)
-println(" =========================== ")
-println("Solution stats:\n", sol1_1.stats)
+#println("Errors:\n",sol1_1.errors)
+#println(" =========================== ")
+#println("Algorithm Details:\n",sol1_1.alg)
+#println(" =========================== ")
+#println("Solution stats:\n", sol1_1.stats)
 
 
 println("Errors:\n",sol1_2.errors)
@@ -60,5 +63,17 @@ println(" =========================== ")
 println("Algorithm Details:\n",sol1_2.alg)
 println(" =========================== ")
 println("Solution stats:\n", sol1_2.stats)
+
+
+
+jldopen(outputf,"w") do f
+  f["solution"] = sol1_2.u
+  f["t"] = sol1_2.t
+  f["Uin"] = Uin
+  f["Vin"] = Vin
+  f["UU"] = UU
+  f["VV"]=VV
+  f["L"]=LL
+end
 
 
