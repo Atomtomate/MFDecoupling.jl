@@ -29,8 +29,6 @@ Parameters
   - *p[4]*:  μ_imp chemical potential for impurity
   - *p[5]*:  - μ_c   chemical potential for chain (onsite energy shift is includid in the chemical potential)
 """
-
-
 function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
     
     J::Float64     = 1.0
