@@ -17,19 +17,20 @@ outputf = ARGS[10]
 
 tspan = (tmin,tmax)
 
-X0, Q, P, S, LC, LK = read_inputs(fp1, fp2, LL)
+X0, rhsf! = setup_calculation(fp1, fp2, LL)
 # solve
 
 linsolve = KrylovJL_GMRES()
 alg_expl = AutoTsit5(Rosenbrock23(autodiff=false))
     #SSPSDIRK2(autodiff=false)
 alg_impl = AutoTsit5(ImplicitEuler(autodiff=false, linsolve = KrylovJL_GMRES()))
+alg_impl_2 = MFDecoupling.AutoTsit5(MFDecoupling.KenCarp47(autodiff=use_real, linsolve = linsolve); maxnonstiffstep=3, stiffalgfirst=true)
     #KenCarp47(linsolve = KrylovJL_GMRES(), autodiff=false)
     #
 
 p_0  = [LL, UU, VV, 0.0, 0.0];
 
-prob = ODEProblem{true}(test!,X0,tspan,p_0,
+prob = ODEProblem{true}(rhsf!,X0,tspan,p_0,
     progress = true,
     progress_steps = 1)
 

@@ -16,7 +16,8 @@ tmax = 10.0
 
 tspan = (tmin,tmax)
 
-X0, Q, P, S, LC, LK = read_inputs(fp1, fp2, LL)
+X0, rhsf! = setup_calculation(fp1, fp2, LL; mode=:real)
+#X0, rhs = setup_calculation(fp1, fp2, LL; mode=:complex)
 # solve
 
 linsolve = MFDecoupling.KrylovJL_GMRES()
@@ -29,8 +30,8 @@ linsolve = MFDecoupling.KrylovJL_GMRES()
 #TODO: test if Jocobian is sparse
 #TDO: save_everystep=false
 
-alg_impl1 = MFDecoupling.AutoTsit5(MFDecoupling.KenCarp47(autodiff=false, linsolve = linsolve))
-alg_impl2 = MFDecoupling.AutoTsit5(MFDecoupling.ImplicitEuler(autodiff=false, linsolve = linsolve))
+alg_impl1 = MFDecoupling.AutoTsit5(MFDecoupling.KenCarp47(linsolve = linsolve))
+alg_impl2 = MFDecoupling.AutoTsit5(MFDecoupling.ImplicitEuler(linsolve = linsolve))
     #KenCarp47(linsolve = KrylovJL_GMRES(), autodiff=false)
     #
 
@@ -39,12 +40,12 @@ p_0  = [LL, UU, VV, 0.0, 0.0];
 prob1 = MFDecoupling.ODEProblem(MFDecoupling.test!,X0,tspan,p_0,
     progress = false,
     progress_steps = 0)
-prob2 = MFDecoupling.ODEProblem(MFDecoupling.rhs!,X0,tspan,p_0,
+prob2 = MFDecoupling.ODEProblem(rhsf!,X0,tspan,p_0,
     progress = false,
     progress_steps = 0)
 
 @time sol1_2 = MFDecoupling.solve(prob2, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
-@time sol1_1 = MFDecoupling.solve(prob1, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
+# @time sol1_1 = MFDecoupling.solve(prob1, alg_impl1; save_everystep = false, abstol=1e-7, reltol=1e-7);
 
 # @time sol2 = MFDecoupling.solve(prob1, alg_impl2; save_everystep = true, abstol=1e-8, reltol=1e-8);
 

@@ -29,7 +29,7 @@ Parameters
   - *p[4]*:  μ_imp chemical potential for impurity
   - *p[5]*:  - μ_c   chemical potential for chain (onsite energy shift is includid in the chemical potential)
 """
-function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
+function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64, LC::Int, LK::Int, LIm::Int, Q::AbstractMatrix, P::AbstractMatrix)::Nothing
     
     J::Float64     = 1.0
     L::Int         = Int(p[1])
@@ -39,15 +39,6 @@ function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing
     μ_imp::Float64 = -p[4]    # In this version it has to be so!!!!
     μ_c::Float64   = -p[5]    # In this version it has to be so!!!!
                               # Later on we should have only one μ
-    LC::Int     = floor(Int,(L+3)*L/2)
-    LK::Int     = floor(Int,(L-1)*L/2)
-
-    ##################################################################################################
-    ####################### This Part has to be moved outside! I can't manage! #######################
-    ##################################################################################################
-        # TODO: Auslagern
-    Q = UpperTriangular(Int[(L+1)*i - (i+1)*i/2 + j for i in 1:L, j in 1:L])
-    P = UpperTriangular(Int[(i-1)*L - (i+1)*i/2 + j for i in 1:L, j in 1:L])
     #S = UpperTriangular(Int[(i-1)*4 - (i-1)*i/2 + j for i in 1:4, j in 1:4]);  We do not neet it !
     ##################################################################################################
     ##################################################################################################

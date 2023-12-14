@@ -8,7 +8,7 @@ using ProgressMeter
 using JLD2
 # using ForwardDiff
 
-export read_inputs
+export setup_calculation
 
 global_logger(TerminalLogger());
 

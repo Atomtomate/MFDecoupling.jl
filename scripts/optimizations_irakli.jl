@@ -20,7 +20,8 @@ tmax = 500.0
 
 tspan = (tmin,tmax)
 
-X0, Q, P, S, LC, LK = read_inputs(fp1, fp2, LL)
+X0, rhsf! = setup_calculation(fp1, fp2, LL)
+X0, rhsf_c! = setup_calculation(fp1, fp2, LL; mode=:complex)
 X0_real = vcat(real(X0), imag(X0))
 # solve
 
@@ -49,15 +50,12 @@ alg_impl5 = MFDecoupling.TRBDF2(autodiff=use_real, linsolve = linsolve);
 
 p_0  = [LL, UU, VV, 0.0, 0.0];
 
-prob1 = MFDecoupling.ODEProblem(MFDecoupling.test!,X0,tspan,p_0,
-    progress = false,
-    progress_steps = 0)
 prob = if use_real
-    MFDecoupling.ODEProblem(MFDecoupling.rhs_real_test1!,X0_real,tspan,p_0,
+    MFDecoupling.ODEProblem(rhsf!,X0_real,tspan,p_0,
         progress = false,
         progress_steps = 0)
 else
-    MFDecoupling.ODEProblem(MFDecoupling.rhs!,X0,tspan,p_0,
+    MFDecoupling.ODEProblem(rhsf_c!,X0,tspan,p_0,
         progress = false,
         progress_steps = 0)
 end
