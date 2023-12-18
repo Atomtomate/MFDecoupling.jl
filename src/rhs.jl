@@ -24,6 +24,51 @@ Parameters
   - *p[3]*:  Vr,   coupling between the impurity and chain
   - *p[4]*:  μ_imp chemical potential for impurity
   - *p[5]*:  - μ_c   chemical potential for chain (onsite energy shift is includid in the chemical potential)
+
+
+LC = (L+3)*L/2
+LK = (L-1)*L/2
+LIm= 10 + LC +LK
+
+Q[i,j] = (L+1)*i - (i+1)*i/2 + j    i <= j   (i=j= 0 is not considered)
+        1, ..., LC
+P[i,j] = (i-1)*L - (i+1)*i/2 + j    0 < i < j
+        1, ..., LK
+
+
+Matrix Elelements
+ρ:  [1,1], [1,2], [1,3], [1,4], [2,2], [2,3], [2,4], [3,3], [3,4], [4,4]
+    Re  ->  [1, ..., 10]    and     Im  ->  [11 + LC + LK, ..., 20 + LC + LK]
+
+    Re(ρ[1,1]) -> X[1],             Re(ρ[1,2]) -> X[2],             Re(ρ[1,3]) -> X[3],             Re(ρ[1,4]) -> X[4],
+    Re(ρ[2,2]) -> X[5],             Re(ρ[2,3]) -> X[6],             Re(ρ[2,4]) -> X[7],
+    Re(ρ[3,3]) -> X[8],             Re(ρ[3,4]) -> X[9],
+    Re(ρ[3,3]) -> X[10]
+    Im(ρ[1,1]) -> X[11+LC+LK],      Im(ρ[1,2]) -> X[12+LC+LK],      Im(ρ[1,3]) -> X[13+LC+LK],      Im(ρ[1,4]) -> X[14+LC+ LK],
+    Im(ρ[2,2]) -> X[15+LC+LK],      Im(ρ[2,3]) -> X[16+LC+LK],      Im(ρ[2,4]) -> X[17+LC+LK],
+    Im(ρ[3,3]) -> X[18+LC+LK],      Im(ρ[3,4]) -> X[19+LC+LK],
+    Im(ρ[4,4]) -> X[20+LC+LK]
+
+C:  [0,1], [0,2], ..., [0,L], [1,1], ..., [1,L], [2,2], ..., [2,L], [3,3], ...., [L-1,L-1], [L-1,L], [L,L]
+    Re  ->  [11, ..., 10 + LC]      and     Im  ->  [21 + LC + LK, ..., 20 + 2 LC + LK]
+
+    Re(C[i,j]) -> X[10+Q[i,j]]
+                Re(C[0,1]) -> X[11],    Re(C[0,2]) -> X[12],    ...,
+                Re(C[1,1]) -> X[11+L],  ...,    Re(C[L,L]) -> X[10+LC]
+    Im(C[i,j]) -> X[10+Q[i,j] + LIm]
+                Im(C[0,1]) -> X[11+LIm],      Im(C[0,2]) -> X[12+LIm],     ...,
+                Im(C[1,1]) -> X[11+L+LIm],    ...,    Im(C[L,L]) -> X[10+LC+LIm]
+
+K:  [1,2], ..., [1,L], [2,3], ..., [2,L], [3,4], ...., [3,L], [4,5], ..., [L-2,L-1], [L-2,L], [L-1,L]
+    Re  ->  [11 + LC, ..., LIm]     and     Im  ->  [21 + 2 LC + LK, ..., 20 + 2 LC + 2 LK]
+
+    Re(K[i,j]) -> X[10+LC+P[i,j]]
+                Re(K[1,2]) -> X[11+LC],     Re(K[1,3]) -> X[12+LC],     ...,
+                Re(K[2,3]) -> X[10+LC+L),   ...,    Re(K[L-1,L]) ->  X[LIm]
+    Im(K[i,j]) -> X[10+LC+P[i,j]+LIm]
+                Im(K[1,2]) -> X[11+LC+LIm],     Im(K[1,3]) -> X[12+LC+LIm],     ...,
+                Im(K[2,3]) -> X[10+LC+L+LIm),   ...,    Im(K[L-1,L]) ->  X[2 LIm]
+
 """
 function rhs_real!(dX::Vector, X::Vector, p::Vector, t::Float64, LC::Int, LK::Int, LIm::Int, Q::AbstractMatrix, P::AbstractMatrix)::Nothing
     
@@ -35,56 +80,6 @@ function rhs_real!(dX::Vector, X::Vector, p::Vector, t::Float64, LC::Int, LK::In
     μ_imp::Float64 = -p[4]    # In this version it has to be so!!!!
     μ_c::Float64   = -p[5]    # In this version it has to be so!!!!
                               # Later on we should have only one μ
-
-
-    """
-    LC = (L+3)*L/2
-    LK = (L-1)*L/2
-    LIm= 10 + LC +LK
-
-    Q[i,j] = (L+1)*i - (i+1)*i/2 + j    i <= j   (i=j= 0 is not considered)
-            1, ..., LC
-    P[i,j] = (i-1)*L - (i+1)*i/2 + j    0 < i < j
-            1, ..., LK
-
-
-    Matrix Elelements
-    ρ:  [1,1], [1,2], [1,3], [1,4], [2,2], [2,3], [2,4], [3,3], [3,4], [4,4]
-        Re  ->  [1, ..., 10]    and     Im  ->  [11 + LC + LK, ..., 20 + LC + LK]
-
-        Re(ρ[1,1]) -> X[1],             Re(ρ[1,2]) -> X[2],             Re(ρ[1,3]) -> X[3],             Re(ρ[1,4]) -> X[4],
-        Re(ρ[2,2]) -> X[5],             Re(ρ[2,3]) -> X[6],             Re(ρ[2,4]) -> X[7],
-        Re(ρ[3,3]) -> X[8],             Re(ρ[3,4]) -> X[9],
-        Re(ρ[3,3]) -> X[10]
-        Im(ρ[1,1]) -> X[11+LC+LK],      Im(ρ[1,2]) -> X[12+LC+LK],      Im(ρ[1,3]) -> X[13+LC+LK],      Im(ρ[1,4]) -> X[14+LC+ LK],
-        Im(ρ[2,2]) -> X[15+LC+LK],      Im(ρ[2,3]) -> X[16+LC+LK],      Im(ρ[2,4]) -> X[17+LC+LK],
-        Im(ρ[3,3]) -> X[18+LC+LK],      Im(ρ[3,4]) -> X[19+LC+LK],
-        Im(ρ[4,4]) -> X[20+LC+LK]
-
-    C:  [0,1], [0,2], ..., [0,L], [1,1], ..., [1,L], [2,2], ..., [2,L], [3,3], ...., [L-1,L-1], [L-1,L], [L,L]
-        Re  ->  [11, ..., 10 + LC]      and     Im  ->  [21 + LC + LK, ..., 20 + 2 LC + LK]
-
-        Re(C[i,j]) -> X[10+Q[i,j]]
-                    Re(C[0,1]) -> X[11],    Re(C[0,2]) -> X[12],    ...,
-                    Re(C[1,1]) -> X[11+L],  ...,    Re(C[L,L]) -> X[10+LC]
-        Im(C[i,j]) -> X[10+Q[i,j] + LIm]
-                    Im(C[0,1]) -> X[11+LIm],      Im(C[0,2]) -> X[12+LIm],     ...,
-                    Im(C[1,1]) -> X[11+L+LIm],    ...,    Im(C[L,L]) -> X[10+LC+LIm]
-
-    K:  [1,2], ..., [1,L], [2,3], ..., [2,L], [3,4], ...., [3,L], [4,5], ..., [L-2,L-1], [L-2,L], [L-1,L]
-        Re  ->  [11 + LC, ..., LIm]     and     Im  ->  [21 + 2 LC + LK, ..., 20 + 2 LC + 2 LK]
-
-        Re(K[i,j]) -> X[10+LC+P[i,j]]
-                    Re(K[1,2]) -> X[11+LC],     Re(K[1,3]) -> X[12+LC],     ...,
-                    Re(K[2,3]) -> X[10+LC+L),   ...,    Re(K[L-1,L]) ->  X[LIm]
-        Im(K[i,j]) -> X[10+LC+P[i,j]+LIm]
-                    Im(K[1,2]) -> X[11+LC+LIm],     Im(K[1,3]) -> X[12+LC+LIm],     ...,
-                    Im(K[2,3]) -> X[10+LC+L+LIm),   ...,    Im(K[L-1,L]) ->  X[2 LIm]
-    """
-
-
-
-
 
 
     temp = -2 * imag(Vr*(X[11] - 1im*X[11+LIm]) * (X[2] + X[3] +1im*(X[2+LIm] + X[3+LIm])))

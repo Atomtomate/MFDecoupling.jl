@@ -1,3 +1,5 @@
+using LinearAlgebra
+include("rhs_old.jl")
 @testset "test rewrite" begin
     NSamples = 2
     ptest = collect(LinRange(1,3,5))
@@ -6,6 +8,7 @@
     ptest[1] = 10
 
 
+    Q,P,LC,LK,LIm = MFDecoupling.gen_helpers(LL)
     for i in 1:NSamples
         X0test = randn(ComplexF64, 120)
         X0test[1] = real(X0test[1])
@@ -17,14 +20,15 @@
             Qii=floor(Int,(10+1)*i - (i+1)*i/2 + i +10)
             X0test[Qii] = real(X0test[Qii])
         end
+        @test !any(isnan.(X0test))
 
         dX0test_1 = similar(X0test)
         dX0test_2 = similar(X0test)
         fill!(dX0test_1, NaN)
         fill!(dX0test_2, NaN)
 
-        MFDecoupling.rhs!(dX0test_1, X0test, ptest, t)
-        MFDecoupling.test!(dX0test_2, X0test, ptest, t)
+        MFDecoupling.rhs!(dX0test_1, X0test, ptest, t, LC, LK, LIm, Q, P)
+        test!(dX0test_2, X0test, ptest, t)
 
         @test !any(isnan.(dX0test_1))
         @test !any(isnan.(dX0test_2))
@@ -42,6 +46,7 @@ end
     t = 0.1
     LL = 10
     ptest[1] = 10
+    Q,P,LC,LK,LIm = MFDecoupling.gen_helpers(LL)
 
 
     for i in 1:NSamples
@@ -53,8 +58,8 @@ end
         fill!(dX0test_1, NaN)
         fill!(dX0test_2, NaN)
 
-        MFDecoupling.rhs_real_test1!(dX0test_1, X0test, ptest, t)
-        MFDecoupling.rhs_real!(dX0test_2, X0test, ptest, t)
+        MFDecoupling.rhs_real_test1!(dX0test_1, X0test, ptest, t, LC, LK, LIm, Q, P)
+        MFDecoupling.rhs_real!(dX0test_2, X0test, ptest, t, LC, LK, LIm, Q, P)
 
 
         """
