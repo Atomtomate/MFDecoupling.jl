@@ -1,4 +1,3 @@
-using LinearAlgebra
 include("rhs_old.jl")
 @testset "test rewrite" begin
     NSamples = 2
@@ -16,7 +15,7 @@ include("rhs_old.jl")
         X0test[8] = real(X0test[8])
         X0test[10] = real(X0test[10])
 
-        for ii in 1:LL
+        for i in 1:LL
             Qii=floor(Int,(10+1)*i - (i+1)*i/2 + i +10)
             X0test[Qii] = real(X0test[Qii])
         end
@@ -58,7 +57,7 @@ end
         fill!(dX0test_1, NaN)
         fill!(dX0test_2, NaN)
 
-        MFDecoupling.rhs_real_test1!(dX0test_1, X0test, ptest, t, LC, LK, LIm, Q, P)
+        rhs_real_test1!(dX0test_1, X0test, ptest, t)
         MFDecoupling.rhs_real!(dX0test_2, X0test, ptest, t, LC, LK, LIm, Q, P)
 
 

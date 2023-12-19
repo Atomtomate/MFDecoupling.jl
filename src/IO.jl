@@ -40,6 +40,7 @@ function read_inputs(fp1::String, fp2::String, L::Int)
     lρ = size(ρ,1)
 
     X0 = ComplexF64[]
+    sizehint!(X0, trunc(Int, lρ * (lρ/2) + lC * lC/2 + lK * lK/2))
 
     for i in 1:lρ
         for j in i:lρ
@@ -47,17 +48,12 @@ function read_inputs(fp1::String, fp2::String, L::Int)
         end
     end
 
-
-    for j in 2:lC
-        push!(X0, C[1,j])
-    end
-
     for i in 2:lC
+        push!(X0, C[1,i])
         for j in i:lC
             push!(X0, C[i,j])
         end
     end
-
 
     for i in 1:lK
         for j in (i+1):lK
@@ -81,16 +77,17 @@ function setup_calculation(fp1::String, fp2::String, L::Int; mode=:real)
 
     Q,P,LC,LK,LIm = gen_helpers(L)
 
-    if mode == :real 
+    X0_res, rhs_res = if mode == :real 
         X0_real = vcat(real(X0), imag(X0))
         rhs_f_r(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing = rhs_real!(dX, X, p, t, LC, LK, LIm, Q, P)
-        return X0_real, rhs_f_r
+        X0_real, rhs_f_r
     elseif mode == :complex
         rhs_f_c(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing = rhs!(dX, X, p, t, LC, LK, LIm, Q, P)
-        return X0, rhs_f_c
+        X0, rhs_f_c
     else
         error("Unkown mode $mode")
     end
+    return X0_res, rhs_res 
 end
 
 """
@@ -99,7 +96,7 @@ end
 Generates index helpers for right hand side. 
 """
 function gen_helpers(L::Int)
-    Q = UpperTriangular(Int[(L+1)*i - (i+1)*i/2 + j for i in 0:L, j in 0:L])
+    Q = UpperTriangular(Int[(L+1)*i - (i+1)*i/2 + j for i in 1:L, j in 1:L])
     P = UpperTriangular(Int[(i-1)*L - (i+1)*i/2 + j for i in 1:L, j in 1:L])
     LC::Int     = floor(Int,(L+3)*L/2)    # Number of C
     LK::Int     = floor(Int,(L-1)*L/2)    # Number of K``

@@ -190,3 +190,96 @@ end
 
 
 
+
+
+"""
+    rhs_real_test1!(dXin::Vector, Xin::Vector, p::Vector, t::Float64)::Nothing
+
+Naive test for real version of [`rhs!`](@ref rhs!), [`rhs_real!`](@ref rhs_real!).
+"""
+function rhs_real_test1!(dXin::Vector, Xin::Vector, p::Vector, t::Float64)::Nothing
+
+    J::Float64     = 1.0
+    L::Int         = Int(p[1])
+    U::Float64     = p[2]
+    ϵ_imp::Float64 = -U/2     # In this version it has to be so!!!!
+    Vr::Float64    = p[3]
+    μ_imp::Float64 = -p[4]    # In this version it has to be so!!!!
+    μ_c::Float64   = -p[5]    # In this version it has to be so!!!!
+                              # Later on we should have only one μ
+    LC::Int     = floor(Int,(L+3)*L/2)
+    LK::Int     = floor(Int,(L-1)*L/2)
+    LRe::Int    =10+LC+LK
+
+    ##################################################################################################
+    ####################### This Part has to be moved outside! I can't manage! #######################
+    ##################################################################################################
+        # TODO: Auslagern
+    Q = UpperTriangular(Int[(L+1)*i - (i+1)*i/2 + j for i in 1:L, j in 1:L])
+    P = UpperTriangular(Int[(i-1)*L - (i+1)*i/2 + j for i in 1:L, j in 1:L])
+    #S = UpperTriangular(Int[(i-1)*4 - (i-1)*i/2 + j for i in 1:4, j in 1:4]);  We do not neet it !
+    ##################################################################################################
+    ##################################################################################################
+
+    NH = trunc(Int, length(Xin)/2)
+    X = Xin[1:NH] .+ Xin[NH+1:end] .* 1im
+    dX = similar(X)
+
+    dX[1] = -2 * imag(conj(Vr * X[11]) *( X[2]  + X[3]))
+    dX[2] = -1im*( (U- μ_imp + ϵ_imp)*X[2] + Vr * X[11] * (X[5] + conj(X[6]) - X[1]) -conj(Vr * X[11]) * X[4])
+    dX[3] = -1im*( (U- μ_imp + ϵ_imp)*X[3] + Vr * X[11] * (X[6] + X[8] - X[1]) -conj(Vr * X[11]) * X[4])
+    dX[4] = -1im*( (U- 2*(μ_imp - ϵ_imp))*X[4] + Vr * X[11] * (X[7] + X[9] - X[2] -X[3]))
+    dX[5] = 2 * imag(conj(Vr * X[11]) *( X[2]  - X[7]))
+    dX[6] = -1im*(conj(Vr * X[11]) * (X[3] -X[7]) + Vr * X[11] * conj(X[9] - X[2]) )
+    dX[7] = -1im*(conj(Vr * X[11]) * X[4] - (μ_imp - ϵ_imp) * X[7] + Vr * X[11] * (X[10] -X[5] - X[6]))
+    dX[8] = 2 * imag(conj(Vr * X[11]) *( X[3]  - X[9]))
+    dX[9] = -1im*(conj(Vr * X[11]) * X[4] - (μ_imp - ϵ_imp) * X[9] + Vr * X[11] * (X[10] -conj(X[6]) - X[8]))
+    dX[10] =2 * imag(conj(Vr * X[11]) *( X[7]  + X[9]))
+
+    dX[11]=-1im*(J*X[12] - μ_c*X[11] - 2*Vr*(X[3]+X[7])*X[10+Q[1,1]] + Vr*(X[3]+X[7]))
+    for j in 2:L-1
+        dX[10+j]=-1im*(J*X[9+j] + J*X[11+j] - μ_c*X[10+j]
+                 - 2*Vr*(X[3]+X[7])*X[10+Q[1,j]] + 2*Vr*conj(X[3]+X[7])*X[10+LC+P[1,j]])
+    end
+    dX[10+L]=-1im*(J*X[9+L] - μ_c*X[10+L]
+            - 2*Vr*(X[3]+X[7])*X[10+Q[1,L]] + 2*Vr*conj(X[3]+X[7])*X[10+LC+P[1,L]])
+    dX[10+Q[1,1]]= -2 * imag(-J*X[10+Q[1,2]] + Vr*conj(X[3]+X[7])*X[11])
+    for j in 2 : L-1
+        dX[10+Q[1,j]]=1im*(J*X[10+Q[2,j]]-J*X[10+Q[1,j-1]]-J*X[10+Q[1,j+1]]+ Vr*conj(X[3]+X[7])*X[10+j])
+    end
+    dX[10+Q[1,L]]=1im*(J*X[10+Q[2,L]] - J*X[10+Q[1,L-1]] + Vr*conj(X[3]+X[7])*X[10+L])
+    for i in 2 : L-1
+        dX[10+Q[i,i]]=2*imag(-J*X[10+Q[i-1,i]] + X[10+Q[i,i+1]])
+        for j in i+1 : L-1
+            dX[10+Q[i,j]]=1im*(J*X[10+Q[i-1,j]]+J*X[10+Q[i+1,j]] - X[10+Q[i,j-1]] - X[10+Q[i,j+1]])
+        end
+        dX[10+Q[i,L]]=1im*(J*X[10+Q[i-1,L]] + J*X[10+Q[i+1,L]] - X[10+Q[i,L-1]])
+    end
+    dX[10+Q[L,L]]=-2*imag(J*X[10+Q[L-1,L]])
+
+
+
+    dX[10+LC+P[1,2]]=-1im*(J*X[10+LC+P[1,3]] - 2* μ_c*X[10+LC+P[1,2]] + Vr*(X[3]+X[7])*X[12])
+    for j in 3:L-1
+        dX[10+LC+P[1,j]]=-1im*(J*X[10+LC+P[2,j]] + J*X[10+LC+P[1,j-1]] + J*X[10+LC+P[1,j+1]]
+                          - 2* μ_c*X[10+LC+P[1,j]] + Vr*(X[3]+X[7])*X[10+j])
+    end
+    dX[10+LC+P[1,L]]=-1im*(J*X[10+LC+P[2,L]] + J*X[10+LC+P[1,L-1]]
+                      - 2* μ_c*X[10+LC+P[1,L]] + Vr*(X[3]+X[7])*X[10+L])
+    for i in 2 : L-2
+        dX[10+LC+P[i,i+1]]=-1im*(J*X[10+LC+P[i-1,i+1]]+J*X[10+LC+P[i,i+2]] - 2* μ_c*X[10+LC+P[i,i+1]])
+        for j in i+2 : L-1
+            dX[10+LC+P[i,j]]=-1im*(J*X[10+LC+P[i-1,j]] + J*X[10+LC+P[i+1,j]] + J*X[10+LC+P[i,j-1]]
+                              + J*X[10+LC+P[i,j+1]] - 2* μ_c*X[10+LC+P[i,j]])
+        end
+        dX[10+LC+P[i,L]]=-1im*(J*X[10+LC+P[i-1,L]] + J*X[10+LC+P[i+1,L]] + J*X[10+LC+P[i,L-1]] - 2* μ_c*X[10+LC+P[i,L]])
+    end
+    dX[10+LC+P[L-1,L]]=-1im*(J*X[10+LC+P[L-2,L]] - 2* μ_c*X[10+LC+P[L-1,L]])
+
+
+    dXin[1:NH] = real(dX)
+    dXin[NH+1:end] = imag(dX)
+
+
+    return nothing
+end
