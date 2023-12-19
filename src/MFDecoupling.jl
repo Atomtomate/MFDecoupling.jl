@@ -6,7 +6,8 @@ using Logging: global_logger
 using TerminalLoggers: TerminalLogger
 using ProgressMeter
 using JLD2
-# using ForwardDiff
+using ForwardDiff
+using PrecompileTools
 
 export read_inputs, setup_calculation
 

@@ -28,10 +28,9 @@ tsave = LinRange(300,500,2000)
 UList = LinRange(3.3,4.3,100)
 X0 = read_inputs(fp1, fp2, LL)
 
-
 @everywhere function solve_time_evolution(U::Float64, V::Float64, X0::Vector, L::Int, tspan, tsave, index, fpout)
     Q,P,LC,LK,LIm = MFDecoupling.gen_helpers(L)
-    X0, rhsf! = setup_calculation(X0; mode=:real)
+    X0, rhsf! = setup_calculation(X0, L; mode=:real)
     p_0  = [L, U, V, 0.0, 0.0];
 
     linsolve = MFDecoupling.KrylovJL_GMRES()
@@ -54,7 +53,7 @@ wp = default_worker_pool()
 
 futures = []
 for (i,Ui) in enumerate(UList)
-    push!(futures, remotecall(solve_time_evolution, wp, Ui, VV, X0, tspan, tsave, i, fpout))
+    push!(futures, remotecall(solve_time_evolution, wp, Ui, VV, X0, LL, tspan, tsave, i, fpout))
 end
 
 for fi in futures
