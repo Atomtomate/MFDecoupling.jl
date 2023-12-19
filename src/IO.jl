@@ -72,9 +72,12 @@ Returns start vector `X0` and function `rhs` for the right hand side of differen
 Mode can either be :real or :complex. The former uses a real vector representation (with twice as many vector entries) and is the (much fast) default.
 """
 function setup_calculation(fp1::String, fp2::String, L::Int; mode=:real)
-
     X0 = read_inputs(fp1::String, fp2::String, L::Int)
+    Q,P,LC,LK,LIm = gen_helpers(L)
 
+    return setup_calculation(X0, L; mode=mode)
+end
+function setup_calculation(X0::Vector, L::Int; mode=:real)
     Q,P,LC,LK,LIm = gen_helpers(L)
 
     X0_res, rhs_res = if mode == :real 
