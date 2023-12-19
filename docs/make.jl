@@ -22,7 +22,7 @@ makedocs(;
 
 deploydocs(;
     branch="gh-pages",
-    devbranch = "master",
+    devbranch = "main",
     devurl = "stable",
     repo="github.com/Atomtomate/MFDecoupling.jl.git",
 )
