@@ -65,18 +65,22 @@ function read_inputs(fp1::String, fp2::String, L::Int)
 end
 
 """
-    setup(fp1::String, fp2::String, L::Int; mode::Symbol=:real)
+    setup_calculation(fp1::String, fp2::String, L::Int; mode::Symbol=:real)
+    setup_calculation(X0::Vector, L::Int; mode=:real)
 
 Sets up the calculation. 
 Returns start vector `X0` and function `rhs` for the right hand side of differential equation. 
 Mode can either be :real or :complex. The former uses a real vector representation (with twice as many vector entries) and is the (much fast) default.
+
+It may be useful for performance, to read inputs only a single time with [`read_inputs`](@ref read_inputs), which returns `X0`.
 """
 function setup_calculation(fp1::String, fp2::String, L::Int; mode=:real)
-
     X0 = read_inputs(fp1::String, fp2::String, L::Int)
+    return setup_calculation(X0, L; mode=mode) 
+end
 
+function setup_calculation(X0::Vector, L::Int; mode=:real)
     Q,P,LC,LK,LIm = gen_helpers(L)
-
     X0_res, rhs_res = if mode == :real 
         X0_real = vcat(real(X0), imag(X0))
         rhs_f_r(dX::Vector, X::Vector, p::Vector, t::Float64)::Nothing = rhs_real!(dX, X, p, t, LC, LK, LIm, Q, P)
@@ -89,7 +93,6 @@ function setup_calculation(fp1::String, fp2::String, L::Int; mode=:real)
     end
     return X0_res, rhs_res 
 end
-
 """
     gen_helpers(L::Int)
 
