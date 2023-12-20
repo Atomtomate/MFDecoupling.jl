@@ -41,15 +41,16 @@ function read_inputs(fp1::String, fp2::String, L::Int)
 
     X0 = ComplexF64[]
     sizehint!(X0, trunc(Int, lρ * (lρ/2) + lC * lC/2 + lK * lK/2))
-
     for i in 1:lρ
         for j in i:lρ
             push!(X0, ρ[i,j]) 
         end
     end
+    for j in 2:lC
+        push!(X0, C[1,j])
+    end
 
     for i in 2:lC
-        push!(X0, C[1,i])
         for j in i:lC
             push!(X0, C[i,j])
         end
@@ -60,7 +61,6 @@ function read_inputs(fp1::String, fp2::String, L::Int)
             push!(X0, K[i,j])
         end
     end
-
     return X0
 end
 

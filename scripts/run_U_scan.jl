@@ -1,7 +1,9 @@
 using Distributed
 
 #addprocs(96, topology=:master_worker, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecouplingSysimage_03.so", "--check-bounds=no"])
-addprocs(90, topology=:master_worker)#, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecoupling.so", "--check-bounds=no"])
+addprocs(90, topology=:master_worker, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecoupling.so", "--check-bounds=no"])
+println("addprocs done")
+flush(stdout)
 
 @everywhere using Pkg
 @everywhere Pkg.activate(joinpath(@__DIR__,".."))
@@ -20,13 +22,13 @@ const Uin::Float64 = 0.1
 const Vin::Float64 = 0.5
 const VV::Float64 = 0.5
 const tmin::Float64 = 0.0
-const tmax::Float64 = 300.0
+const tmax::Float64 = 400.0
 tspan = (tmin,tmax)
-tsave = LinRange(200.0,300.0,200)
+tsave = LinRange(100.0,400.0,1000)
 
 
 
-UList = LinRange(3.3,4.3,90)
+UList = LinRange(0.0,4.0,90)
 X0 = read_inputs(fp1, fp2, LL)
 
 @everywhere function solve_time_evolution(U::Float64, V::Float64, X0::Vector, L::Int, tspan, tsave, index, fpout)
