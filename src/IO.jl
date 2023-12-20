@@ -76,8 +76,6 @@ It may be useful for performance, to read inputs only a single time with [`read_
 """
 function setup_calculation(fp1::String, fp2::String, L::Int; mode=:real)
     X0 = read_inputs(fp1::String, fp2::String, L::Int)
-<<<<<<< HEAD
-    Q,P,LC,LK,LIm = gen_helpers(L)
 
     return setup_calculation(X0, L; mode=mode)
 end
