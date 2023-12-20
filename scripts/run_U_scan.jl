@@ -1,7 +1,7 @@
 using Distributed
 
 #addprocs(96, topology=:master_worker, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecouplingSysimage_03.so", "--check-bounds=no"])
-addprocs(96, topology=:master_worker, restrict=true, exeflags=["--check-bounds=no"])
+addprocs(90, topology=:master_worker)#, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecoupling.so", "--check-bounds=no"])
 
 @everywhere using Pkg
 @everywhere Pkg.activate(joinpath(@__DIR__,".."))
@@ -10,6 +10,7 @@ addprocs(96, topology=:master_worker, restrict=true, exeflags=["--check-bounds=n
 
 fp = ARGS[1]
 fpout = ARGS[2]
+
 fp1 = joinpath(fp,"CK_U0.1V0.5.dat") #ARGS[1]
 fp2 = joinpath(fp,"rho_U0.1V0.5.dat")
 
@@ -19,13 +20,13 @@ const Uin::Float64 = 0.1
 const Vin::Float64 = 0.5
 const VV::Float64 = 0.5
 const tmin::Float64 = 0.0
-const tmax::Float64 = 500.0
+const tmax::Float64 = 300.0
 tspan = (tmin,tmax)
-tsave = LinRange(300,500,2000)
+tsave = LinRange(200.0,300.0,200)
 
 
 
-UList = LinRange(3.3,4.3,100)
+UList = LinRange(3.3,4.3,90)
 X0 = read_inputs(fp1, fp2, LL)
 
 @everywhere function solve_time_evolution(U::Float64, V::Float64, X0::Vector, L::Int, tspan, tsave, index, fpout)
@@ -39,12 +40,13 @@ X0 = read_inputs(fp1, fp2, LL)
         progress = false,
         progress_steps = 0)
     idxs_list = union(collect(1:11),LIm .+ collect(1:11)) 
-    @time sol = MFDecoupling.solve(prob, alg; save_idxs=idxs_list, saveat=tsave, abstol=1e-10, reltol=1e-10);
+    @time sol = MFDecoupling.solve(prob, alg; save_idxs=idxs_list, saveat=tsave, abstol=1e-6, reltol=1e-6);
     println("DONE with $U")
     flush(stdout)
     jldopen(joinpath(fpout,"res_$index.jld2"), "w") do f
         f["res_$index/U"] = U
-        f["res_$index/sol"] = sol
+        f["res_$index/sol"] = sol[:,:]
+        f["res_$index/t"] = sol.t
     end
     return nothing #U, sol
 end

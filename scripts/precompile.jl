@@ -1,11 +1,12 @@
-using Pkg
-Pkg.activate(joinpath(@__DIR__,".."))
+# this is just the U scan script with hardcoded paths. example usage:
+# PackageCompiler.create_sysimage(["MFDecoupling"]; sysimage_path="MFDecoupling.so", precompile_execution_file="scripts/precompile.jl")
+
 using MFDecoupling
 using JLD2
 
 
-fp = ARGS[1]
-fpout = ARGS[2]
+fp = "/scratch/projects/hhp00048/MFDecoupling/UScan/data_01"#ARGS[1]
+fpout = "tmp"
 fp1 = joinpath(fp,"CK_U0.1V0.5.dat") #ARGS[1]
 fp2 = joinpath(fp,"rho_U0.1V0.5.dat")
 
