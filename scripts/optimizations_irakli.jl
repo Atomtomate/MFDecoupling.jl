@@ -20,9 +20,8 @@ tmax = 500.0
 
 tspan = (tmin,tmax)
 
-X0, rhsf! = setup_calculation(fp1, fp2, LL)
+X0_real, rhsf! = setup_calculation(fp1, fp2, LL)
 X0, rhsf_c! = setup_calculation(fp1, fp2, LL; mode=:complex)
-X0_real = vcat(real(X0), imag(X0))
 # solve
 
 linsolve = MFDecoupling.KrylovJL_GMRES()
@@ -43,7 +42,7 @@ alg_impl1 = MFDecoupling.AutoTsit5(MFDecoupling.KenCarp47(autodiff=use_real, lin
 alg_impl2 = MFDecoupling.AutoTsit5(MFDecoupling.ImplicitEuler(autodiff=use_real, linsolve = linsolve))
 alg_impl3 = MFDecoupling.KenCarp47(autodiff=use_real, linsolve = linsolve);
 #TODO: concrete, but sparse jacobian : alg_impl4 = MFDecoupling.RadauIIA3(autodiff=false, linsolve = linsolve)
-alg_impl5 = MFDecoupling.TRBDF2(autodiff=use_real, linsolve = linsolve);
+alg_impl4 = MFDecoupling.TRBDF2(autodiff=use_real, linsolve = linsolve);
 
     #KenCarp47(linsolve = KrylovJL_GMRES(), autodiff=false)
     #

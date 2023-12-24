@@ -44,7 +44,7 @@ function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64, LC::Int, LK::Int, LI
     ##################################################################################################
 
     #  rho[1,1]
-    dX[1] =-2 * imag(conj(Vr * X[11]) *( X[2]  + X[3]))
+    dX[1] = -2*imag(conj(Vr * X[11]) *( X[2]  + X[3]))
     #  rho[1,2]
     dX[2] = -1im*( (U- μ_imp + ϵ_imp)*X[2] + Vr * X[11] * (X[5] + conj(X[6]) - X[1]) -conj(Vr * X[11]) * X[4])
     #  rho[1,3]
@@ -52,18 +52,18 @@ function rhs!(dX::Vector, X::Vector, p::Vector, t::Float64, LC::Int, LK::Int, LI
     #  rho[1,4]
     dX[4] = -1im*( (U- 2*(μ_imp - ϵ_imp))*X[4] + Vr * X[11] * (X[7] + X[9] - X[2] -X[3]))
     #  rho[2,2]
-    dX[5] = 2 * imag(conj(Vr * X[11]) *( X[2]  - X[7]))
+    dX[5] =  2*imag(conj(Vr * X[11]) *( X[2]  - X[7]))
     #  rho[2,3]
     dX[6] = -1im*(conj(Vr * X[11]) * (X[3] -X[7]) + Vr * X[11] * conj(X[9] - X[2]) )
     #  rho[2,4]
     dX[7] = -1im*(conj(Vr * X[11]) * X[4] - (μ_imp - ϵ_imp) * X[7] + Vr * X[11] * (X[10] -X[5] - X[6]))
     #  rho[3,3]
-    dX[8] =2 * imag(conj(Vr * X[11]) *( X[3]  - X[9]))
+    dX[8] =  2*imag(conj(Vr * X[11]) *( X[3]  - X[9]))
     #  rho[3,4]
     dX[9] = -1im*(conj(Vr * X[11]) * X[4] - (μ_imp - ϵ_imp) * X[9] + Vr * X[11] * (X[10] -conj(X[6]) - X[8]))
     #  rho[4,4]
     #dX[9] = -1im*(conj(Vr*X[11])*X[4]  + (-μ_imp + ϵ_imp )*X[9] +Vr*X[11]*real(X[10]) - conj(X[6])*Vr*X[11] - real(X[8])*Vr*X[11])
-    dX[10] =2 * imag(conj(Vr * X[11]) *( X[7]  + X[9]))
+    dX[10] = 2*imag(conj(Vr * X[11]) *( X[7]  + X[9]))
 
 
 
