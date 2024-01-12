@@ -1,9 +1,34 @@
+using Statistics, FourierAnalysis, Images
+
 # Builds DataFrame from file obtained by merge.jl (after Uscan). 
 # Expects .jld2 file (output of merge.jl) with data and path to file where dataframe will be stored.
 # Example usage: julia build_df out_full.jld2 out_df.jld2
 
 fn = ARGS[1]
 dfFile = ARGS[2]
+
+"""
+     find_amplitude(tx, signal)
+
+Estimation of amplitude, using local maxima/minima and linear interpolation.
+Returns two arrays: `tx` (times of amplitudes) and `ampl` (amplitude).
+"""
+function find_amplitude(tx, signal)
+    maxy_ix = findlocalmaxima(signal)
+    miny_ix = findlocalminima(signal)
+    if length(maxy_ix) != 0
+        start = tx[miny_ix[1]] <  tx[maxy_ix[1]] ? 0 : 1
+        ind = 2:length(maxy_ix)-2
+        ampl = Vector{Float64}(undef, length(ind))
+        t_ampl = tx[miny_ix[ind]]
+        for (i,ii) in enumerate(ind)
+            ampl[i] = mean(signal[maxy_ix[ii-1:ii]]) - signal[miny_ix[ii-start]]
+        end
+        return t_ampl, ampl
+    else
+        return [0.0], [0.0]
+    end
+end
 
 function build_df(fn::String)
     df = DataFrame(U = Float64[], V = Float64[], t = Vector{Float64}[],        rho11 = Vector{ComplexF64}[], rho12 = Vector{ComplexF64}[],
@@ -40,16 +65,20 @@ function build_df(fn::String)
     df[!,:f_do] = df[:,:rho12] .+ df[:,:rho34]
     
     # supplement mean value
-    lim_ind = 10000
-    var_window = trunc(Int, length(df[1,:t]) / 10)
+    lim_ind = 300
+    
     for cn in names(df)[4:end]
         df[!,Symbol(cn * "_lim")] = map(x-> mean(x[end-lim_ind:end]), df[:,Symbol(cn)])
-        df[!,Symbol(cn * "_std")] = map(x-> [std(x[i-var_window:i]) for i in var_window+1:length(x)], df[:,Symbol(cn)])
+    end
+
+    ampl_cols = ["rho11", "f_up", "C01"]
+    for cn in ampl_cols
+        df[!,Symbol(cn * "_ampl")] = map(x->find_amplitude(x.t, real(x[cn])), eachrow(df[:,[:t, Symbol(cn)]]))
     end
     
     # calculate ffts of time series
     fft_cols = ["rho11", "rho12", "rho22", "rho24", "f_up", "C01"]
-    fft_start_i = length(df[1,:t])-trunc(Int, length(df[1,:t]) / 10)
+    fft_start_i = trunc(Int, length(df[1,:t]) / 10)
     tx_fft = df[1,:t][fft_start_i:end]
     freqs = collect(FourierAnalysis.fftfreq(length(tx_fft), 1.0/diff(tx_fft)[1]) |> FourierAnalysis.fftshift)
     df[!,:freqs] = [freqs for i in 1:size(df,1)]
@@ -61,15 +90,18 @@ function build_df(fn::String)
     return df
 end
 
-df = if isfile(dfFile)
+df = if false && isfile(dfFile)
     jldopen(dfFile) do ff
         ff["df"]
     end
 else
-    df_precision = build_df(fn);
+    df_pt = build_df(fn_pt);
+    df_coarse = build_df(fn_coarse);
+    df_smallU = build_df(fn_smallU);
+    
+    # combine and remove duplicates
+    df = combine(groupby(vcat(df_pt,df_coarse, df_smallU), [:U, :V]), last); 
+    jldopen(dfFile, "w") do ff
+        ff["df"] = df
+    end
 end
-
-df_Vin = df[df.V .≈ Vin, :]
-sort!(df_Vin, [:U])
-
-VList = sort(unique(df.V))
