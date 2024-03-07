@@ -1,7 +1,7 @@
 using Distributed
 
 #addprocs(96, topology=:master_worker, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecouplingSysimage_03.so", "--check-bounds=no"])
-addprocs(90, topology=:master_worker)#, restrict=true, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecoupling.so", "--check-bounds=no"])
+addprocs(90, topology=:master_worker, restrict=true)#, exeflags=["-J/scratch/projects/hhp00048/MFDecoupling/UScan/MFDecoupling.so", "--check-bounds=no"])
 println("addprocs done")
 flush(stdout)
 
@@ -20,15 +20,15 @@ fp2 = joinpath(fp,"rho_U0.1V0.5.dat")
 #TODO: read from file
 const LL::Int = 1000
 const Vin::Float64 = 0.5
-const VV::Float64 = 0.5
 const tmin::Float64 = 0.0
-const tmax::Float64 = 400.0
+const tmax::Float64 = 500.0
 tspan = (tmin,tmax)
-tsave = LinRange(0.0,400.0,50000)
+tsave = LinRange(0.0,500.0,2000)
 
 
 
-UList = LinRange(0.0,8.0,180)
+UList = union(LinRange(0.0,12.0,30), [0.1])#union(LinRange(0.0,0.2,10),LinRange(3.0,5.0,10),LinRange(10.0,20.0,10))
+VList = union(LinRange(0.0,2.0,10), [0.5])#union(LinRange(0.0,2.0,25),[0.4,0.5,0.6])
 X0 = read_inputs(fp1, fp2, LL)
 
 @everywhere function solve_time_evolution(U::Float64, V::Float64, X0_in::Vector, L::Int, tspan, tsave, index, fpout, use_real)
@@ -42,15 +42,16 @@ X0 = read_inputs(fp1, fp2, LL)
     prob = MFDecoupling.ODEProblem(rhsf!,X0,tspan,p_0)
     #idxs_list = union(collect(1:11),LIm .+ collect(1:11)) 
     idxs_list = collect(1:11)
-    println("START $U")
+    println("START $U/$V")
     flush(stdout)
-    @time sol = MFDecoupling.solve(prob, alg; save_idxs=idxs_list, saveat=tsave, abstol=1e-10, reltol=1e-10);
-    println("DONE with $U")
+    @time sol = MFDecoupling.solve(prob, alg; save_idxs=idxs_list, saveat=tsave, abstol=1e-9, reltol=1e-9);
+    println("DONE with $U/$V")
     flush(stdout)
-    jldopen(joinpath(fpout,"res_$index.jld2"), "w") do f
-        f["res_$index/U"] = U
-        f["res_$index/sol"] = sol[:,:]
-        f["res_$index/t"] = sol.t
+    jldopen(joinpath(fpout,"grid_res_$index.jld2"), "w") do f
+        f["U"] = U
+        f["V"] = V
+        f["sol"] = sol[:,:]
+        f["t"] = sol.t
     end
     return nothing #U, sol
 end
@@ -59,7 +60,10 @@ wp = default_worker_pool()
 
 futures = []
 for (i,Ui) in enumerate(UList)
-    push!(futures, remotecall(solve_time_evolution, wp, Ui, VV, X0, LL, tspan, tsave, i, fpout, use_real))
+    for (j,Vi) in enumerate(VList)
+        # println(j+(i-1)*length(VList))
+        push!(futures, remotecall(solve_time_evolution, wp, Ui, Vi, X0, LL, tspan, tsave, j+(i-1)*length(VList), fpout, use_real))
+    end
 end
 
 for fi in futures

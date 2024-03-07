@@ -15,12 +15,12 @@
 Reads two files at locations `fp1`, `fp2`.... ?
 """
 function read_inputs(fp1::String, fp2::String, L::Int)
-    println("Reading File 1")
+    #println("Reading File 1")
     CK= open(fp1, "r") do f
         readdlm(f)
     end;
 
-    println("Reading File 2")
+    #println("Reading File 2")
     ρ = open(fp2, "r") do f
         arr = readdlm(f)
     end;

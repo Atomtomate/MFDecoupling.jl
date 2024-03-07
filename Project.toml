@@ -1,7 +1,7 @@
 name = "MFDecoupling"
 uuid = "302c5ee5-f6a5-4ccb-887c-986379ff7ea6"
 authors = ["Irakli Titvinidze <a@b.c>", "Julian Stobbe <a@b.c>"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"

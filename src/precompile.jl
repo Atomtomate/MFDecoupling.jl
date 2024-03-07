@@ -1,11 +1,15 @@
-# this is just the U scan script with hardcoded paths. example usage:
-# PackageCompiler.create_sysimage(["MFDecoupling"]; sysimage_path="MFDecoupling.so", precompile_execution_file="scripts/precompile.jl")
-
-using MFDecoupling
-using PrecompileTools
-
+# ==================================================================================================== #
+#                                             rhs.jl                                                   #
+# ---------------------------------------------------------------------------------------------------- #
+#   Author          : Irakli Titvinidze, Julian Stobbe                                                 #
+# ----------------------------------------- Description ---------------------------------------------- #
+#   Precompilation workload for faster startup times.                                                  #
+# -------------------------------------------- TODO -------------------------------------------------- #
+#   Replace fp path by small test data                                                                 #
+# ==================================================================================================== #
 
 @setup_workload begin
+    #TODO: local, very small, data here!!!!
     fp = "/scratch/projects/hhp00048/MFDecoupling/UScan/data_01"#ARGS[1]
     fpout = "tmp"
     fp1 = joinpath(fp,"CK_U0.1V0.5.dat") #ARGS[1]
@@ -14,7 +18,7 @@ using PrecompileTools
     const LL::Int = 1000
     Uin::Float64 = 0.1
     Vin::Float64 = 0.5
-    Ufi::Flaot64 = 0.5
+    Ufi::Float64 = 0.5
     Vfi::Float64 = 0.5
     tmin::Float64 = 0.0
     tmax::Float64 = 0.2
