@@ -3,6 +3,9 @@
 # Description: Calculates equilibrium and time evolution for MFDecoupling.jl.      #
 #              chain length `L` and initial and final values for `U` and `V` are   #
 #              hardcoded in the script and need to be changed here.                #
+#              The result files are constructed incrementally.                     #
+#              Unless interupted during I/O, program can be stopped at any time    #
+#              and will resume on restart.                                         #
 # Arguments: - file path to data                                                   #
 #            - rhs as real or complex (default should be 0,                        #
 #                                       unless you need a specific solver)         #
@@ -77,10 +80,10 @@ VList = union(VList_1, VList_2, VList_3)
         prob = MFDecoupling.ODEProblem(rhsf!,X0,tspan,p_0)
         #idxs_list = union(collect(1:11),LIm .+ collect(1:11)) 
         idxs_list = collect(1:11)
-        println("START $Ufi/$Vfi")
+        println("START TE $Ufi/$Vfi")
         flush(stdout)
         sol = MFDecoupling.solve(prob, alg; save_idxs=idxs_list, saveat=tsave, abstol=1e-9, reltol=1e-9);
-        println("DONE with $Ufi/$Vfi")
+        println("DONE TE with $Ufi/$Vfi")
         flush(stdout)
         fpout = joinpath(fp, "te_res.jld2")
         lock = FileWatching.Pidfile.mkpidlock(pid_lock)
@@ -125,11 +128,9 @@ end
     fp_eq = joinpath(fp, "eq_res.jld2")
     pid_lock = joinpath(fp, "eq.pid")
     test = isfile(fp_eq)
-    println("DBG3: ", fp_eq)
-    println("DBG2: isfile $U/$V/$L = $test")
     diff, f_init, g_init, ind = if isfile(fp_eq)
         lock = FileWatching.Pidfile.mkpidlock(pid_lock)
-        jldopen(fp_eq, "a+") do f
+        res, f_init, g_init, ind = jldopen(fp_eq, "a+") do f
             content = f["content"]
             res, ind = findmin(x->abs(x[1]-U)+abs(x[2]-V)+abs(x[3]-L)/(100*L), content) 
             f_init = f["$ind/f_eq"]
@@ -137,6 +138,7 @@ end
             res, f_init, g_init, ind
         end
         close(lock)
+        res, f_init, g_init, ind
     else
         Inf, 1.0, -1.0, NaN
     end
@@ -149,26 +151,21 @@ end
     fp_eq = joinpath(fp, "eq_res.jld2")
     pid_lock = joinpath(fp, "eq.pid")
     diff, f_init, g_init, ind = find_fg_init(fp, U, V, L) 
-    println("DBG: U/V/L $U/$V/$L || diff = $diff")
     flush(stdout)
     rng = MersenneTwister();
 
-    X, index = if diff < 1e-8
+    X0, index = if diff < 1e-8
         lock = FileWatching.Pidfile.mkpidlock(pid_lock)
-        jldopen(fp_eq, "r") do f
+        X0, ind = jldopen(fp_eq, "r") do f
             f["$ind/X0"], ind
         end
         close(lock)
-        println("Found equilibrium solution for U/V/L = $U/$V/$L")
-        flush(stdout)
+        X0, ind
     else
         fileID = 100000*myid() + convert(Int, rand(rng, UInt16))
         while isfile(joinpath(fp,"rho0_$fileID.dat"))
             fileID = 100000*myid() + convert(Int, rand(rng, UInt16))
         end
-        println("Starting equilibrium calculation for U/V/L = $U/$V/$L with id $fileID")
-        flush(stdout)
-
         io = IOBuffer();
         cmd_p = `./main $U $V $g_init $f_init $fileID $L` 
         cmd = pipeline(cmd_p; stdout=io, stderr=devnull);
