@@ -1,9 +1,8 @@
 using Documenter
-using Pkg
-Pkg.activate(String(@__DIR__) * "/..")
+push!(LOAD_PATH, "..")
 using MFDecoupling
 
-push!(LOAD_PATH, "../src")
+
 makedocs(;
     modules=[MFDecoupling],
     authors="Julian Stobbe <Atomtomate@gmx.de> and contributors",
