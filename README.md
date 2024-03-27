@@ -27,9 +27,11 @@ Mean Field Decoupling of Single Impurity Anderson Model through Auxiliary Majora
 
 ------------------------------------
 
-Please Cite:
+If you are using this package for a publication please cite:
 
-TODO: arXiv Link after upload
+~~~
+Titvinidze I, Stobbe J, Rubtsov AN, Rohringer G. Mean Field Decoupling of Single Impurity Anderson Model through Auxiliary Majorana Fermions. arXiv e-prints. Published online March 2024. http://arxiv.org/abs/2403.13661
+~~~
 
 ------------------------------------
 
