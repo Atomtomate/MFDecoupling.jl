@@ -1,21 +1,14 @@
-cff-version: 1.1.0
-message: If you use this software, please cite it as below.
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
 title: "Mean Field Decoupling of Single Impurity Anderson Model through Auxiliary Majorana Fermions"
 authors:
-  - family-names: Titvinidze
-    given-names: Irakli
-  - family-names: Stobbe
-    given-names: Julian
-  - family-names: Rubtsov
-    given-names: Alexey N.
-  - family-names: Rohringer
-    given-names: Georg
+  - family-names: "Titvinidze"
+    given-names: "Irakli"
+  - family-names: "Stobbe"
+    given-names: "Julian"
+  - family-names: "Rubtsov"
+    given-names: "Alexey N."
+  - family-names: "Rohringer"
+    given-names: "Georg"
 year: 2024
-identifiers:
-  doi: "10.48550/arXiv.2403.13661"
-  arXiv: "2403.13661"
-license: CC-BY-4.0
-keywords:
-  - Condensed Matter - Strongly Correlated Electrons
-  - Condensed Matter - Mesoscale and Nanoscale Physics
-version: "1.0"
+doi: "10.48550/arXiv.2403.13661"
